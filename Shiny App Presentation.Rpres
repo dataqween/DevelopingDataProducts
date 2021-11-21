@@ -1,0 +1,73 @@
+Developing Data Products
+Shiny App Presentation
+========================================================
+author: M Anderson
+date: 11/19/2021
+font-family: 'Helvetica'
+autosize: true
+transition: rotate
+type: section
+
+Introduction
+========================================================
+type: sub-section
+
+This [app](https://dataqween.shinyapps.io/ForwardApp/) is a comparison tool of Wisconsin Forward Exam proficiency levels by school district.  The Wisconsin Forward Exam is an annual summative assessment measuring progress toward college and career readiness in the subjects of English language arts, mathematics, science, and social studies.  Students in grades 3-8 & 10 take the assessment in the spring of each school year.
+
+The Data
+========================================================
+type: sub-section
+
+The data used in this [app](https://dataqween.shinyapps.io/ForwardApp/) is provided for free by the [Wisconsin Department of Public Instruction](https://dpi.wi.gov/wisedash/download-files).  
+
+```{r, echo=FALSE}
+library(tidyverse)
+library(kableExtra)
+
+setwd("/Users/michelleanderson/Documents/Coursera Developing Data Products/Forward App/ForwardApp/")
+
+fwd_ALL <- read_rds("forward_certified_app.rds")
+
+sample <- head(fwd_ALL, n=5)
+```
+
+```{r, fig.fullwidth=TRUE}
+knitr::kable(sample)
+```
+
+The App
+========================================================
+type: sub-section
+
+The [app](https://dataqween.shinyapps.io/ForwardApp/) provides several filtering options to customize your comparison:  
+- <font size="6"> Use the Subject radial dial to select between English language arts, mathematics, science, or social studies. </font>
+
+- <font size="6"> Use the School Level drop down box to select all students, elementary students, or middle school students. </font>
+
+- <font size="6"> Use the School District check boxes to select school districts for comparison. </font>
+
+Output Example
+========================================================
+type: sub-section
+
+App output for the following inputs:
+<font size="6"> Subject = Mathematics, School Level = All Students, Districts = Statewide, Brown Deer, & Wauwatosa </font>
+
+```{r, echo=FALSE, fig.height=6, fig.width=8, fig.align="center"}
+inputSubject <- "Mathematics"
+inputSchoolLevel <- "All Students"
+inputSchoolDistrict <- c("[Statewide]", "Brown Deer", "Wauwatosa")
+
+fwd_Prof <- fwd_ALL %>% filter(Proficient=="Proficient", DISTRICT_NAME %in% inputSchoolDistrict, SchoolLevel==inputSchoolLevel, TEST_SUBJECT==inputSubject)
+    
+ggplot() +
+      geom_line(data=fwd_Prof, aes(x=SCHOOL_YEAR, y=Proficient_Percent, group=DISTRICT_NAME, color=DISTRICT_NAME), size=1.5, alpha=.5) +
+      geom_point(data=fwd_Prof, aes(x=SCHOOL_YEAR, y=Proficient_Percent, group=DISTRICT_NAME, color=DISTRICT_NAME), size=2.5, alpha=.75) +
+      ggtitle(paste(inputSubject,  "Proficiency for Students Enrolled a Full Academic Year")) +
+      xlab("") +
+      ylab("Percent Proficient or Advanced") +
+      ylim(0, 100) +
+      theme(axis.text.x = element_text(angle = 90, size=16), axis.text.y = element_text(size=14), axis.title.y=element_text(size=16), text = element_text(size = 14), axis.title = element_text(size = 20)) +
+      geom_text(data=fwd_Prof, aes(x=SCHOOL_YEAR, y=Proficient_Percent, label=round(Proficient_Percent,0)), size=5, color="gray25", vjust=-1.1, check_overlap=TRUE)
+```
+
